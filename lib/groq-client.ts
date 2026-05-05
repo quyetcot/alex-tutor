@@ -67,14 +67,19 @@ export const streamGroq = async (
 export const parseAIResponse = (raw: string): GeminiStructuredResponse => {
   // Try to find ```json ... ``` block first (Groq/Gemini both use this)
   const jsonBlockMatch = raw.match(/```json\s*([\s\S]*?)```/);
-  const jsonStr = jsonBlockMatch ? jsonBlockMatch[1].trim() : raw.trim();
+  let jsonStr = jsonBlockMatch ? jsonBlockMatch[1].trim() : raw.trim();
+
+  // Clean up common LLM JSON errors (like outputting Python's None instead of null)
+  jsonStr = jsonStr.replace(/:\s*None/g, ': null');
 
   try {
     return JSON.parse(jsonStr) as GeminiStructuredResponse;
   } catch {
-    // Fallback: plain text response without JSON structure
+    // Fallback: extract the text *before* the JSON block if it exists
+    const textBeforeJson = raw.split('```json')[0].trim();
+    
     return {
-      reply: raw.trim(),
+      reply: textBeforeJson || raw.trim(),
       analysis: { corrections: [], vocabulary_upgrades: [] },
     };
   }

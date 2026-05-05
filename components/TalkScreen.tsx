@@ -133,7 +133,9 @@ export const TalkScreen = () => {
                 '';
               if (text) {
                 accumulated += text;
-                updateLastMessage(accumulated);
+                // Only show text before the JSON block to the user during stream
+                const displayContent = accumulated.split('```json')[0].trim();
+                updateLastMessage(displayContent || accumulated);
               }
             } catch {
               // skip malformed chunks
