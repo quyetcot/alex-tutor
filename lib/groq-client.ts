@@ -65,24 +65,38 @@ export const streamGroq = async (
  * Handles both ```json ... ``` wrapped and raw JSON responses.
  */
 export const parseAIResponse = (raw: string): GeminiStructuredResponse => {
-  // Try to find ```json ... ``` block first (Groq/Gemini both use this)
-  const jsonBlockMatch = raw.match(/```json\s*([\s\S]*?)```/);
-  let jsonStr = jsonBlockMatch ? jsonBlockMatch[1].trim() : raw.trim();
+  // 1. Sanitize Python-style None/True/False → JSON null/true/false
+  const sanitized = raw
+    .replace(/:\s*None/g, ': null')
+    .replace(/:\s*True/g, ': true')
+    .replace(/:\s*False/g, ': false');
 
-  // Clean up common LLM JSON errors (like outputting Python's None instead of null)
-  jsonStr = jsonStr.replace(/:\s*None/g, ': null');
-
-  try {
-    return JSON.parse(jsonStr) as GeminiStructuredResponse;
-  } catch {
-    // Fallback: extract the text *before* the JSON block if it exists
-    const textBeforeJson = raw.split('```json')[0].trim();
-    
-    return {
-      reply: textBeforeJson || raw.trim(),
-      analysis: { corrections: [], vocabulary_upgrades: [] },
-    };
+  // 2. Try to extract ```json ... ``` fenced block first
+  const fencedMatch = sanitized.match(/```json\s*([\s\S]*?)```/);
+  if (fencedMatch) {
+    try {
+      return JSON.parse(fencedMatch[1].trim()) as GeminiStructuredResponse;
+    } catch {
+      // fall through to next strategy
+    }
   }
+
+  // 3. Try to find raw JSON object (starts with '{') anywhere in the string
+  const jsonStart = sanitized.indexOf('{');
+  const jsonEnd = sanitized.lastIndexOf('}');
+  if (jsonStart !== -1 && jsonEnd > jsonStart) {
+    try {
+      return JSON.parse(sanitized.slice(jsonStart, jsonEnd + 1)) as GeminiStructuredResponse;
+    } catch {
+      // fall through to fallback
+    }
+  }
+
+  // 4. Fallback: plain text response without JSON structure
+  return {
+    reply: raw.trim(),
+    analysis: { corrections: [], vocabulary_upgrades: [] },
+  };
 };
 
 // ─── Keep Gemini parseGeminiResponse as alias for backwards compatibility ─────

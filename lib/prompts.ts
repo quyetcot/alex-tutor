@@ -65,7 +65,10 @@ The JSON MUST follow this exact schema:
 
 If there are no corrections, return an empty array for "corrections".
 Always suggest 1–3 vocabulary upgrades even if grammar was perfect.
-IMPORTANT: Return ONLY the JSON block. Do NOT add extra text after the JSON.`;
+CRITICAL RULES — YOU MUST FOLLOW THESE EXACTLY:
+- Output ONLY the JSON block. No text before it, no text after it.
+- The JSON must be valid. Use null (not None), true (not True), false (not False).
+- Never include any conversational text outside the JSON block.`;
 
 // ─── Tech Talk System Prompt ──────────────────────────────────────────────────
 
@@ -104,7 +107,10 @@ The JSON MUST follow this exact schema:
 
 Encourage precise, clear technical communication.
 If there are no corrections, return an empty array.
-IMPORTANT: Return ONLY the JSON block. Do NOT add extra text after the JSON.`;
+CRITICAL RULES — YOU MUST FOLLOW THESE EXACTLY:
+- Output ONLY the JSON block. No text before it, no text after it.
+- The JSON must be valid. Use null (not None), true (not True), false (not False).
+- Never include any conversational text outside the JSON block.`;
 
 // ─── Greeting Prompt ──────────────────────────────────────────────────────────
 
