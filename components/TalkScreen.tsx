@@ -26,6 +26,8 @@ export const TalkScreen = () => {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const initRef = useRef(false);
+  // Always hold the latest messages without causing re-renders inside useCallback
+  const messagesRef = useRef([] as typeof messages);
 
   const {
     mode, topic, messages, status, persona, englishLevel,
@@ -38,6 +40,9 @@ export const TalkScreen = () => {
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  // Keep ref in sync with latest messages on every render
+  messagesRef.current = messages;
 
   // ── Redirect if no mode selected ──────────────────────────────────────────
   useEffect(() => {
@@ -89,7 +94,7 @@ export const TalkScreen = () => {
 
       try {
         // Build history (exclude the streaming placeholder we just added)
-        const history = messages
+        const history = messagesRef.current
           .filter((m) => !m.isStreaming)
           .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
@@ -176,18 +181,24 @@ export const TalkScreen = () => {
         }));
       }
     },
-    [mode, topic, messages, addMessage, updateLastMessage, finalizeLastMessage, setStatus, speak],
+    // ⚠️ messages intentionally excluded: read via messagesRef.current to avoid
+    // the infinite loop cycle: messages→sendToGemini recreated→greeting useEffect refires
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [mode, topic, persona, englishLevel, addMessage, updateLastMessage, finalizeLastMessage, setStatus, speak],
   );
 
-  // ── Greeting on session start (guard with ref to prevent StrictMode double-fire) ──
+  // ── Greeting on session start ────────────────────────────────────────────
+  // Uses initRef guard to prevent StrictMode double-fire.
+  // sendToGemini is intentionally excluded from deps because it's stable enough
+  // via the ref pattern above; including it would re-trigger on every message.
   useEffect(() => {
     setMounted(true);
-    if (initRef.current || !mode || !topic || messages.length > 0) return;
+    if (initRef.current || !mode || !topic || messagesRef.current.length > 0) return;
     initRef.current = true;
-    // Small delay to ensure component is fully mounted before API call
     const timer = setTimeout(() => sendToGemini('__GREETING__'), 300);
     return () => clearTimeout(timer);
-  }, [mode, topic, messages.length, sendToGemini]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, topic]);
 
   // ── STT: called when user finishes speaking ────────────────────────────────
   const onFinalTranscript = useCallback(
