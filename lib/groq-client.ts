@@ -95,7 +95,7 @@ export const parseAIResponse = (raw: string): GeminiStructuredResponse => {
   // 4. Fallback: plain text response without JSON structure
   return {
     reply: raw.trim(),
-    analysis: { corrections: [], vocabulary_upgrades: [] },
+    analysis: { corrections: [], vocabulary_upgrades: [], suggested_replies: [] },
   };
 };
 

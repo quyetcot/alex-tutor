@@ -53,6 +53,7 @@ export interface VocabularyUpgrade {
 export interface LanguageAnalysis {
   corrections: GrammarCorrection[];
   vocabulary_upgrades: VocabularyUpgrade[];
+  suggested_replies: string[];
 }
 
 export interface Message {

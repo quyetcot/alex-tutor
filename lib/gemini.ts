@@ -102,7 +102,7 @@ export const parseGeminiResponse = (raw: string): GeminiStructuredResponse => {
     // Fallback: if the model returned plain text without JSON
     return {
       reply: raw.trim(),
-      analysis: { corrections: [], vocabulary_upgrades: [] },
+      analysis: { corrections: [], vocabulary_upgrades: [], suggested_replies: [] },
     };
   }
 };

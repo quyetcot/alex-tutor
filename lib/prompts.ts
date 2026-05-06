@@ -58,13 +58,15 @@ The JSON MUST follow this exact schema:
         "upgrade": "better alternative / synonym",
         "example": "example sentence using the upgrade"
       }
-    ]
+    ],
+    "suggested_replies": ["A natural way the user could reply", "Another way to continue the conversation"]
   }
 }
 \`\`\`
 
 If there are no corrections, return an empty array for "corrections".
 Always suggest 1–3 vocabulary upgrades even if grammar was perfect.
+Always provide 2–3 "suggested_replies" that give the user hints on how to naturally answer your question or continue the conversation.
 CRITICAL RULES — YOU MUST FOLLOW THESE EXACTLY:
 - Output ONLY the JSON block. No text before it, no text after it.
 - The JSON must be valid. Use null (not None), true (not True), false (not False).
@@ -100,13 +102,15 @@ The JSON MUST follow this exact schema:
         "upgrade": "more professional alternative",
         "example": "example sentence using the upgrade"
       }
-    ]
+    ],
+    "suggested_replies": ["A professional way the user could respond", "Another natural response to continue the dialogue"]
   }
 }
 \`\`\`
 
 Encourage precise, clear technical communication.
 If there are no corrections, return an empty array.
+Always provide 2–3 "suggested_replies" that give the user hints on how to professionally answer your question or continue the discussion.
 CRITICAL RULES — YOU MUST FOLLOW THESE EXACTLY:
 - Output ONLY the JSON block. No text before it, no text after it.
 - The JSON must be valid. Use null (not None), true (not True), false (not False).

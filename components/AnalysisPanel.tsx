@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, BookMarked, Check, ArrowRight } from 'lucide-react';
+import { ChevronDown, ChevronUp, BookMarked, Check, ArrowRight, MessageCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { LanguageAnalysis, VocabularyUpgrade } from '@/types';
@@ -16,10 +16,11 @@ export const AnalysisPanel = ({ analysis, className }: AnalysisPanelProps) => {
   const [isOpen, setIsOpen] = useState(true);
   const { savedVocabulary, saveVocabularyItem } = useConversationStore();
 
-  const hasCorrections = analysis.corrections.length > 0;
-  const hasUpgrades = analysis.vocabulary_upgrades.length > 0;
+  const hasCorrections = analysis.corrections && analysis.corrections.length > 0;
+  const hasUpgrades = analysis.vocabulary_upgrades && analysis.vocabulary_upgrades.length > 0;
+  const hasSuggestions = analysis.suggested_replies && analysis.suggested_replies.length > 0;
 
-  if (!hasCorrections && !hasUpgrades) return null;
+  if (!hasCorrections && !hasUpgrades && !hasSuggestions) return null;
 
   return (
     <div
@@ -87,6 +88,26 @@ export const AnalysisPanel = ({ analysis, className }: AnalysisPanelProps) => {
               {analysis.vocabulary_upgrades.map((v, i) => (
                 <VocabCard key={i} item={v} isSaved={savedVocabulary.some((s) => s.used === v.used)} onSave={saveVocabularyItem} />
               ))}
+            </div>
+          )}
+
+          {/* Suggested Replies */}
+          {hasSuggestions && (
+            <div className="space-y-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <MessageCircle size={14} className="text-blue-500" />
+                How to reply
+              </h3>
+              <div className="flex flex-col gap-2">
+                {analysis.suggested_replies.map((reply, i) => (
+                  <div
+                    key={i}
+                    className="rounded-lg bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 p-3 text-sm md:text-base text-blue-900 dark:text-blue-200"
+                  >
+                    &ldquo;{reply}&rdquo;
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
